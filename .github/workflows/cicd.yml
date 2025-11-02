@@ -1,0 +1,39 @@
+# .github/workflows/agendador_rpa.yml
+
+name: Agendador do RPA Python
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Roda todos os dias às 12:00 UTC (09:00 no horário de Brasília)
+    - cron: '0 12 * * *'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Baixa o código do repositório
+      - name: Checkout do Repositório
+        uses: actions/checkout@v3
+
+      # 2. Configura o ambiente Python 3.11
+      - name: Configurar Python 3.11
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
+
+      # 3. Instala dependências
+      - name: Instalar Dependências
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r Requirements.txt
+          pip install nbconvert papermill  # para rodar notebooks
+
+      # 4. Executa o notebook
+      - name: Executar Notebook RPA
+        env:
+          FIRST_DATABASE_ACCESS: ${{ secrets.FIRST_DATABASE_ACCESS }}
+          SECOND_DATABASE_ACCESS: ${{ secrets.SECOND_DATABASE_ACCESS }}
+        run: |
+          papermill rpa.ipynb rpa_out.ipynb
